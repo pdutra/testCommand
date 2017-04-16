@@ -1,0 +1,50 @@
+#!/bin/bash
+#Objetivo do script e fazer merge automaticamento para todas as branchs que contem a branch alterada
+
+main() {
+
+	CURRENT=$(git rev-parse --abbrev-ref HEAD)
+	BRANCHES=$(git branch --list -a --contains $CURRENT | grep 'GFEV\|PB' | cut -c 3- | cut -c16- | grep -v '$CURRENT')
+	local parameters="t:wt"
+
+	if ( ! getopts "${parameters}" opt); then
+		executarMerge $CURRENT $BRANCHES
+	fi
+
+	while getopts "${parameters}" opt; do
+		case $opt in 
+		  t)
+			retornarBranchs $CURRENT $BRANCHES
+			;;      
+		  \?)
+			echo "Invalid option: -$OPTARG "
+			;;
+		  :)
+			echo "Option -$OPTARG requires an argument."
+			;;
+		esac
+	done
+
+	git checkout $CURRENT
+	git push
+}
+
+executarMerge() {
+
+	for BRANCH in $2; do 	
+		echo 'Iniciando o merge automático para a branch: '$BRANCH	
+		git checkout $BRANCH
+		git merge $1
+		git push
+		echo 'Merge automático finalizado com sucesso'	
+	done
+{
+
+retornarBranchs() {	
+
+	for BRANCH in $2; do 	
+		echo 'Merge pendente para a branch: '$BRANCH	
+	done
+{
+
+main $@
